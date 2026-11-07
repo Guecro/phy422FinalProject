@@ -69,8 +69,50 @@ def solve_euler(
     return t_points, x_points, v_points
 
 # RK4 - non-symplectic
-def solve_rk4():
-    pass
+def solve_rk4(
+    x0: float,
+    v0: float,
+    omega: float,
+    t_start: float,
+    t_stop: float,
+    num_steps: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    step_size = (t_stop - t_start) / num_steps
+    t_points = np.linspace(t_start, t_stop, num_steps, endpoint=False)
+    x_points = np.empty(num_steps, dtype=float)
+    v_points = np.empty(num_steps, dtype=float)
+
+    x_value = float(x0)
+    v_value = float(v0)
+    
+    x_points[0] = x_value
+    v_points[0] = v_value
+    
+    for i in range(1, num_steps):
+        dx_dt, dv_dt = SHO(x_value, v_value, omega)
+        
+        k1_x = step_size * dx_dt
+        k1_v = step_size * dv_dt
+        
+        dx_dt, dv_dt = SHO(x_value + 0.5 * k1_x, v_value + 0.5 * k1_v, omega)
+        k2_x = step_size *  dx_dt
+        k2_v = step_size * dv_dt
+        
+        dx_dt, dv_dt = SHO(x_value + 0.5 * k2_x, v_value + 0.5 * k2_v, omega)
+        k3_x = step_size *  dx_dt
+        k3_v = step_size * dv_dt
+        
+        dx_dt, dv_dt = SHO(x_value + k3_x, v_value + k3_v, omega)
+        k4_x = step_size * dx_dt
+        k4_v = step_size * dv_dt
+        
+        x_value += (k1_x + 2 * k2_x + 2 * k3_x + k4_x) / 6
+        v_value += (k1_v + 2 * k2_v + 2 * k3_v + k4_v) / 6
+        
+        x_points[i] = x_value
+        v_points[i] = v_value
+        
+    return t_points, x_points, v_points
 
 # Symplectic Euler
 def solve_euler_symplectic():
